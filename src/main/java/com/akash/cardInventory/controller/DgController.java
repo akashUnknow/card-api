@@ -55,7 +55,10 @@ public class DgController {
 
         return ResponseEntity.ok(Map.of(
                 "message", "Login successful",
-                "token", dummyToken
+                "token", dummyToken,
+                "user",Map.of( "id", user.getId(),
+                        "name", user.getUserName(),
+                        "username", user.getId() )
         ));
     }
 
