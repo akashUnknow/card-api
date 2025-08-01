@@ -1,6 +1,8 @@
 package com.akash.cardInventory.service.impl;
 
+import com.akash.cardInventory.dto.BapMonthlyCount;
 import com.akash.cardInventory.dto.BapProfileRequest;
+import com.akash.cardInventory.dto.DgInventoryMonthlyCount;
 import com.akash.cardInventory.entity.BapPRofileEntity;
 import com.akash.cardInventory.entity.IdspProfileEntity;
 import com.akash.cardInventory.repository.BapServiceRepo;
@@ -10,8 +12,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 
@@ -102,5 +106,25 @@ public class BapServiceImp implements BapService {
                 "message", "Bap Profile Updated successfully",
                 "data", existing
         ));
+    }
+
+    @Override
+    public List<BapMonthlyCount> countByDateRange(LocalDate startDate, LocalDate endDate) {
+        List<Object[]> results = repo.countByDateRange(startDate, endDate);
+        return results.stream()
+                .map(obj -> new BapMonthlyCount((String) obj[0], ((Number) obj[1]).longValue()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<BapMonthlyCount> countByMonthForYear(int year) {
+        List<Object[]> result = repo.countByMonthForYearNative(year);
+
+        // Convert Object[] to DgInventoryMonthlyCount DTO
+        return result.stream().map(row -> {
+            String monthName = ((String) row[0]).trim(); // sometimes padded with spaces
+            Long count = ((Number) row[1]).longValue();
+            return new BapMonthlyCount(monthName, count);
+        }).toList();
     }
 }
